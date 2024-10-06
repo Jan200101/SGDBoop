@@ -1,6 +1,8 @@
+#include <windows.h>
+#include <CommCtrl.h>
+
 #include "gui-helper.h"
-#include "windows.h"
-#include "strsafe.h"
+#include "resource.h"
 
 const char szClass[] = "winWindowClass";
 
@@ -20,27 +22,27 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPara
 	{
 		case WM_CREATE:
 			hWndListL = CreateWindowExA(
-				WS_EX_LEFT,
-				"LISTBOX", NULL,
-				WS_BORDER | WS_CHILD | WS_VISIBLE | ES_AUTOVSCROLL | LBS_NOTIFY,
+				WS_EX_CLIENTEDGE | WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
+				WC_LISTBOX, NULL,
+				LBS_NOTIFY | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE | WS_VSCROLL,
 				0, 0, 100, 100,
 				hWnd, NULL,
 				GetModuleHandle(NULL), NULL
 			);
 
 			hWndButtonOk = CreateWindowExA(
-				WS_EX_LEFT,
+				WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
 				"BUTTON", "OK",
-				WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | WS_DISABLED,
+				BS_PUSHBUTTON | BS_TEXT | WS_CHILD | WS_MAXIMIZEBOX | WS_OVERLAPPED | WS_TABSTOP | WS_VISIBLE,
 				0, 0, 75, 40,
 				hWnd, (HMENU)IDC_BUTTON_OK,
 				GetModuleHandle(NULL), NULL
 			);
 
 			hWndButtonCancel = CreateWindowExA(
-				WS_EX_LEFT,
+				WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
 				"BUTTON", "Cancel",
-				WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+				BS_PUSHBUTTON | BS_TEXT | WS_CHILD | WS_MAXIMIZEBOX | WS_OVERLAPPED | WS_TABSTOP | WS_VISIBLE,
 				0, 0, 75, 40,
 				hWnd, (HMENU)IDC_BUTTON_CANCEL,
 				GetModuleHandle(NULL), NULL
@@ -99,6 +101,8 @@ int ShowMessageBox(const char* title, const char* message)
 
 int SelectionDialog(const char* title, int count, const char** list, int selection)
 {
+	InitCommonControls();
+
 	MSG Msg;
 	HWND hWnd;
 
@@ -111,11 +115,19 @@ int SelectionDialog(const char* title, int count, const char** list, int selecti
 	wc.lpfnWndProc = WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hIcon = (HICON)LoadImageA(
+		hInstance,
+		MAKEINTRESOURCEA(IDI_ICON1), IMAGE_ICON,
+		0, 0, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_SHARED
+	);
+	wc.hIconSm = (HICON)LoadImage(
+		hInstance,
+		MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON,
+		GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+		LR_DEFAULTCOLOR | LR_SHARED);
 	wc.hInstance = hInstance;
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+	wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
 	wc.lpszMenuName = NULL;
 	wc.lpszClassName = szClass;
 
